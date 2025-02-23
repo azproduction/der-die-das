@@ -1,9 +1,9 @@
 // components/WordCard/index.tsx
 import { useState, useEffect } from "react";
 import type { Gender, GermanWord } from "@/types";
-import { Feedback } from "../Feedback";
 import type { GameState } from "@/types/game";
 import { Card, Word, ButtonGroup, Button } from "../styles";
+import { WordWithMagicalSuffix } from "@/components/WordWithMagicalSuffix";
 
 interface WordCardProps {
   word: GermanWord;
@@ -35,7 +35,9 @@ export default function WordCard({
 
   return (
     <Card>
-      <Word>{word.word}</Word>
+      <Word>
+        <WordWithMagicalSuffix word={word} />
+      </Word>
       <ButtonGroup>
         <Button
           onClick={() => handleGuess("der")}
@@ -62,14 +64,6 @@ export default function WordCard({
           das
         </Button>
       </ButtonGroup>
-
-      {gameState !== "playing" && (
-        <Feedback
-          isCorrect={gameState === "correct"}
-          correctArticle={word.article}
-          word={word.word}
-        />
-      )}
     </Card>
   );
 }

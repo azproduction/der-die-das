@@ -28,6 +28,13 @@ const ScoreDisplay = styled.div`
   text-align: center;
 `;
 
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 80%;
+  width: 100%;
+`;
+
 export default function Home() {
   const [currentWord, setCurrentWord] = useState<GermanWord | null>(null);
   const [gameState, setGameState] = useState<GameState>("playing");
@@ -68,11 +75,9 @@ export default function Home() {
 
     if (isCorrect) {
       // Short delay to show feedback before moving to next word
-      setTimeout(() => {
-        setCurrentWord(wordSelector.current!.getNextWord());
-        setGameState("playing");
-        setQuizState(null);
-      }, 1000);
+      setCurrentWord(wordSelector.current!.getNextWord());
+      setGameState("playing");
+      setQuizState(null);
     } else {
       // Generate quiz state and transition to quiz mode
       const newQuizState = generateQuizState(currentWord);
@@ -87,11 +92,9 @@ export default function Home() {
     updateScore(isCorrect);
 
     // Short delay to show feedback before moving to next word
-    setTimeout(() => {
-      setCurrentWord(wordSelector.current!.getNextWord());
-      setGameState("playing");
-      setQuizState(null);
-    }, 1000);
+    setCurrentWord(wordSelector.current!.getNextWord());
+    setGameState("playing");
+    setQuizState(null);
   };
 
   const getScorePercentage = () => {
@@ -113,19 +116,17 @@ export default function Home() {
         Score: {score.correct}/{score.total} ({getScorePercentage()}%)
       </ScoreDisplay>
 
-      <WordCard
-        word={currentWord!}
-        onGuess={handleGuess}
-        disabled={gameState === "quiz"}
-      />
-
-      {gameState === "quiz" && quizState && (
-        <AdjectiveQuiz
-          word={currentWord!}
-          quizState={quizState}
-          onSubmit={handleQuizSubmit}
-        />
-      )}
+      <Container>
+        {gameState === "quiz" && quizState ? (
+          <AdjectiveQuiz
+            word={currentWord!}
+            quizState={quizState}
+            onSubmit={handleQuizSubmit}
+          />
+        ) : (
+          <WordCard word={currentWord!} onGuess={handleGuess} />
+        )}
+      </Container>
     </Wrapper>
   );
 }

@@ -14,18 +14,10 @@ export const Container = styled.div`
 `;
 
 export const Card = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
-  padding: ${({ theme }) => theme.spacing.xl};
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   width: 100%;
-  margin: ${({ theme }) => theme.spacing.md} 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform ${({ theme }) => theme.transitions.default};
-
-  &:hover {
-    transform: translateY(-2px);
-  }
 `;
 
 export const Button = styled.button<{ $variant?: "primary" | "secondary" }>`
@@ -41,26 +33,34 @@ export const Button = styled.button<{ $variant?: "primary" | "secondary" }>`
   min-width: 120px;
   text-align: center;
 
-  &:hover {
-    background: ${({ theme, $variant }) =>
-      $variant === "secondary" ? theme.colors.border : theme.colors.secondary};
-  }
-
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
 `;
 
-export const Word = styled.h1`
+export const Word = styled.h1<{ $isSuccess?: boolean; $isFailure?: boolean }>`
   font-size: ${({ theme }) => theme.typography.sizes.huge};
   font-family: ${({ theme }) => theme.typography.fontFamilySans};
   text-align: center;
-  margin: ${({ theme }) => theme.spacing.xl} 0;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     font-size: ${({ theme }) => theme.typography.sizes.xxlarge};
   }
+
+  color: ${({ theme, $isSuccess }) => {
+    if ($isSuccess) {
+      return theme.colors.success;
+    }
+  }};
+
+  color: ${({ theme, $isFailure }) => {
+    if ($isFailure) {
+      return theme.colors.error;
+    }
+  }};
+
+  transition: color ${({ theme }) => theme.transitions.fast};
 `;
 
 export const Feedback = styled.div<{ $isSuccess?: boolean }>`
@@ -102,8 +102,7 @@ export const Score = styled.div`
 
 export const ButtonGroup = styled.div`
   display: flex;
+  flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
-  justify-content: center;
-  flex-wrap: wrap;
-  margin: ${({ theme }) => theme.spacing.lg} 0;
+  width: 100%;
 `;

@@ -5,6 +5,9 @@ export type Case = "nominative" | "accusative" | "dative";
 export interface GermanWord {
   word: string;
   article: Gender;
+  note: string;
+  example: string;
+  magicalSuffix?: [string, string];
 }
 
 export interface QuizState {

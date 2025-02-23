@@ -1,10 +1,11 @@
 // components/AdjectiveQuiz/index.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { GermanWord } from "@/types";
 import type { AdjectiveQuizState } from "@/types/quiz";
 import { getCorrectArticle, getCorrectEnding } from "@/utils/grammar";
-import { Card, Button, Select, ButtonGroup } from "../styles";
+import { Button, Card, Word } from "../styles";
 import styled from "styled-components";
+import { WordWithMagicalSuffix } from "@/components/WordWithMagicalSuffix";
 
 const QuizContainer = styled(Card)`
   display: flex;
@@ -12,26 +13,74 @@ const QuizContainer = styled(Card)`
   gap: ${({ theme }) => theme.spacing.lg};
 `;
 
-const Sentence = styled.div`
-  font-size: ${({ theme }) => theme.typography.sizes.large};
-  line-height: 1.5;
-  text-align: center;
-  font-family: ${({ theme }) => theme.typography.fontFamilySans};
-`;
-
-const Hint = styled.div`
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-  color: ${({ theme }) => theme.colors.secondary};
-  text-align: center;
-  font-style: italic;
-`;
-
 const SelectGroup = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
+  flex: 1;
+`;
+
+const Label = styled.label<{
+  $valid?: boolean;
+  $selected?: boolean;
+  $disabled?: boolean;
+}>`
+  flex-direction: row;
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.md};
+
+  border: 2px solid ${({ theme }) => theme.colors.primary};
+  border-color: ${({ theme, $valid, $selected, $disabled }) => {
+    if ($valid) {
+      return theme.colors.success;
+    }
+    if ($selected) {
+      return theme.colors.primary;
+    }
+
+    if ($disabled) {
+      return theme.colors.secondary;
+    }
+
+    return theme.colors.primary;
+  }};
+
+  background-color: ${({ theme, $valid, $selected }) => {
+    if ($valid) {
+      return theme.colors.success;
+    }
+    if ($selected) {
+      return theme.colors.primary;
+    }
+    return "transparent";
+  }};
+  color: ${({ theme, $valid, $selected, $disabled }) => {
+    if ($valid || $selected) {
+      return theme.colors.background;
+    }
+
+    if ($disabled) {
+      return theme.colors.secondary;
+    }
+
+    return theme.colors.primary;
+  }};
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.xl}`};
+  font-size: ${({ theme }) => theme.typography.sizes.large};
+  border-radius: 4px;
+
+  & input {
+    display: none;
+  }
+`;
+
+const Items = styled.div`
+  flex-direction: column;
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.md};
+  flex: 1;
 `;
 
 interface AdjectiveQuizProps {
@@ -47,63 +96,123 @@ export default function AdjectiveQuiz({
 }: AdjectiveQuizProps) {
   const [selectedArticle, setSelectedArticle] = useState("");
   const [selectedEnding, setSelectedEnding] = useState("");
+  const [corrent, setCorrent] = useState<boolean | null>(null);
 
-  const handleSubmit = () => {
+  const [correctArticle, correctEnding] = useMemo(() => {
     const correctArticle = getCorrectArticle(word.article, quizState.case);
     const correctEnding = getCorrectEnding(word.article, quizState.case);
+
+    return [correctArticle, correctEnding];
+  }, [quizState.case, word.article]);
+
+  useEffect(() => {
+    if (!selectedArticle) {
+      return;
+    }
+
+    if (!selectedEnding) {
+      return;
+    }
+
     const isCorrect =
       selectedArticle === correctArticle && selectedEnding === correctEnding;
-    onSubmit(isCorrect);
-  };
+
+    setCorrent(isCorrect);
+
+    if (isCorrect) {
+      const timer = setTimeout(() => {
+        onSubmit(isCorrect);
+      }, 500);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [
+    correctArticle,
+    correctEnding,
+    onSubmit,
+    selectedArticle,
+    selectedEnding,
+  ]);
 
   return (
     <QuizContainer>
-      <Sentence>
-        {quizState.preposition} {selectedArticle || "___"} {quizState.adjective}
-        {selectedEnding || "___"} {word.word}
-      </Sentence>
+      <Word $isFailure={corrent === false} $isSuccess={corrent === true}>
+        <ruby>
+          {quizState.preposition} <rp>(</rp>
+          <rt style={{ opacity: 0.5, fontWeight: 500 }}>
+            {}
+            {(() => {
+              if (typeof quizState.isDirectional !== "boolean") {
+                return <>&nbsp;</>;
+              }
 
-      {quizState.isDirectional !== undefined && (
-        <Hint>
-          Hint: "{quizState.preposition}" indicates{" "}
-          {quizState.isDirectional ? "movement/direction" : "position/location"}{" "}
-          here
-        </Hint>
-      )}
+              return quizState.isDirectional ? "⮕" : "⬇";
+            })()}
+          </rt>
+          <rp>)</rp>
+        </ruby>
+        {"…"} {quizState.adjective}
+        {"…"} <WordWithMagicalSuffix word={word} />
+      </Word>
 
       <SelectGroup>
-        <Select
-          value={selectedArticle}
-          onChange={(e) => setSelectedArticle(e.target.value)}
-        >
-          <option value="">Select article</option>
-          <option value="dem">dem</option>
-          <option value="der">der</option>
-          <option value="den">den</option>
-          <option value="das">das</option>
-          <option value="die">die</option>
-        </Select>
+        <Items>
+          {["der", "die", "das", "den", "dem"].map((name) => {
+            return (
+              <Label
+                key={name}
+                $valid={corrent === false && correctArticle === name}
+                $selected={selectedArticle === name}
+                $disabled={Boolean(selectedEnding) && Boolean(selectedArticle)}
+              >
+                <input
+                  type="radio"
+                  id={name}
+                  name={name}
+                  value={name}
+                  disabled={Boolean(selectedEnding) && Boolean(selectedArticle)}
+                  onChange={() => setSelectedArticle(name)}
+                  checked={selectedArticle === name}
+                />
+                {name}
+              </Label>
+            );
+          })}
+        </Items>
 
-        <Select
-          value={selectedEnding}
-          onChange={(e) => setSelectedEnding(e.target.value)}
-        >
-          <option value="">Select ending</option>
-          <option value="e">-e</option>
-          <option value="en">-en</option>
-          <option value="es">-es</option>
-          <option value="er">-er</option>
-        </Select>
+        <Items>
+          {["er", "e", "es", "en"].map((name) => {
+            return (
+              <Label
+                key={name}
+                $valid={corrent === false && correctEnding === name}
+                $selected={selectedEnding === name}
+                $disabled={Boolean(selectedEnding) && Boolean(selectedArticle)}
+              >
+                <input
+                  type="radio"
+                  id={name}
+                  name={name}
+                  value={name}
+                  disabled={Boolean(selectedEnding) && Boolean(selectedArticle)}
+                  onChange={() => setSelectedEnding(name)}
+                  checked={selectedEnding === name}
+                />
+                {name}
+              </Label>
+            );
+          })}
+        </Items>
       </SelectGroup>
-
-      <ButtonGroup>
-        <Button
-          onClick={handleSubmit}
-          disabled={!selectedArticle || !selectedEnding}
-        >
-          Check Answer
-        </Button>
-      </ButtonGroup>
+      {corrent === false && (
+        <>
+          <Word>{word.note}</Word>
+          <center>{word.example}</center>
+          <Button onClick={() => onSubmit(false)}>OK</Button>
+        </>
+      )}
     </QuizContainer>
   );
 }
