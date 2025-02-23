@@ -19,8 +19,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   padding: 1rem;
   gap: 2rem;
-  margin-top: 40px;
-  margin-bottom: 40px;
+  margin-top: 10px;
 `;
 
 const ScoreDisplay = styled.div`
@@ -35,6 +34,7 @@ const Container = styled.div`
   flex-direction: column;
   width: 100%;
   flex: 1;
+  margin-bottom: 80px;
 `;
 
 export default function Home() {

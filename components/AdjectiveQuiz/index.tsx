@@ -146,14 +146,14 @@ export default function AdjectiveQuiz({
         <ruby>
           {quizState.preposition}
           <rp>(</rp>
-          <rt style={{ opacity: 0.5, fontWeight: 500 }}>
+          <rt style={{ opacity: 0.5, fontWeight: 500, fontSize: 16 }}>
             {}
             {(() => {
               if (typeof quizState.isDirectional !== "boolean") {
                 return <>&nbsp;</>;
               }
 
-              return quizState.isDirectional ? "⮕" : "⬇";
+              return quizState.isDirectional ? "dir" : "loc";
             })()}
           </rt>
           <rp>)</rp>
