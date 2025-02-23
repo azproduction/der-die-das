@@ -72,7 +72,9 @@ const suffixRegexes = Object.fromEntries(
 
 export async function loadWords(): Promise<GermanWord[]> {
   try {
-    const response = await fetch("/data/b1-word-list.csv");
+    const response = await fetch(
+      new URL("data/b1-word-list.csv", String(window.location)).toString(),
+    );
     if (!response.ok) {
       throw new Error("Failed to fetch CSV file");
     }
