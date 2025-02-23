@@ -3,9 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import WordCard from "@/components/WordCard";
+import AdjectiveQuiz from "@/components/AdjectiveQuiz";
 import { loadWords } from "@/services/csvService";
 import { WordSelector } from "@/services/wordService";
+import { generateQuizState } from "@/utils/quizGenerator";
 import type { Gender, GermanWord } from "@/types";
+import type { GameState } from "@/types/game";
+import type { AdjectiveQuizState } from "@/types/quiz";
 
 const Wrapper = styled.div`
   flex: 1;
@@ -16,35 +20,12 @@ const Wrapper = styled.div`
   padding: 1rem;
 `;
 
-const LoadingMessage = styled.div`
-  font-size: 1.5rem;
-  color: #666;
-  font-family: var(--font-geist-sans);
-`;
-
-const ErrorMessage = styled.div`
-  color: #ff0000;
-  padding: 1rem;
-  border: 1px solid #ff0000;
-  border-radius: 4px;
-  margin: 1rem;
-  font-family: var(--font-geist-sans);
-`;
-
-const Progress = styled.div`
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  font-family: var(--font-geist-mono);
-  font-size: 0.875rem;
-  color: #666;
-`;
-
 export default function Home() {
   const [currentWord, setCurrentWord] = useState<GermanWord | null>(null);
+  const [gameState, setGameState] = useState<GameState>("playing");
+  const [quizState, setQuizState] = useState<AdjectiveQuizState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [remainingWords, setRemainingWords] = useState<number>(0);
   const wordSelector = useRef<WordSelector | null>(null);
 
   useEffect(() => {
@@ -52,9 +33,7 @@ export default function Home() {
       try {
         const loadedWords = await loadWords();
         wordSelector.current = new WordSelector(loadedWords);
-        const firstWord = wordSelector.current.getNextWord();
-        setCurrentWord(firstWord);
-        setRemainingWords(wordSelector.current.getRemainingCount());
+        setCurrentWord(wordSelector.current.getNextWord());
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load words");
@@ -66,60 +45,51 @@ export default function Home() {
     initializeWords();
   }, []);
 
-  const handleGuess = (guess: Gender) => {
+  const handleGuess = (guess: Gender, isCorrect: boolean) => {
     if (!currentWord || !wordSelector.current) return;
 
-    const isCorrect = guess === currentWord.article;
-
-    // If correct, show a new word
     if (isCorrect) {
-      // Short delay before showing next word
-      setTimeout(() => {
-        const nextWord = wordSelector.current!.getNextWord();
-        setCurrentWord(nextWord);
-        setRemainingWords(wordSelector.current!.getRemainingCount());
-      }, 500);
+      setCurrentWord(wordSelector.current!.getNextWord());
+      setGameState("playing");
+      setQuizState(null);
+    } else {
+      const newQuizState = generateQuizState(currentWord);
+      setQuizState(newQuizState);
+      setGameState("quiz");
     }
-    // If incorrect, we'll handle the quiz logic in the next step
   };
 
-  const handleReset = () => {
-    if (wordSelector.current) {
-      wordSelector.current.reset();
-      const nextWord = wordSelector.current.getNextWord();
-      setCurrentWord(nextWord);
-      setRemainingWords(wordSelector.current.getRemainingCount());
-    }
+  const handleQuizSubmit = (isCorrect: boolean) => {
+    if (!wordSelector.current) return;
+
+    setCurrentWord(wordSelector.current!.getNextWord());
+    setGameState("playing");
+    setQuizState(null);
   };
 
   if (isLoading) {
-    return (
-      <Wrapper>
-        <LoadingMessage>Loading words...</LoadingMessage>
-      </Wrapper>
-    );
+    return <Wrapper>Loading words...</Wrapper>;
   }
 
   if (error) {
-    return (
-      <Wrapper>
-        <ErrorMessage>Error: {error}</ErrorMessage>
-      </Wrapper>
-    );
-  }
-
-  if (!currentWord) {
-    return (
-      <Wrapper>
-        <ErrorMessage>No words available</ErrorMessage>
-      </Wrapper>
-    );
+    return <Wrapper>Error: {error}</Wrapper>;
   }
 
   return (
     <Wrapper>
-      <Progress>Words remaining: {remainingWords}</Progress>
-      <WordCard word={currentWord} onGuess={handleGuess} />
+      <WordCard
+        word={currentWord!}
+        onGuess={handleGuess}
+        disabled={gameState === "quiz"}
+      />
+
+      {gameState === "quiz" && quizState && (
+        <AdjectiveQuiz
+          word={currentWord!}
+          quizState={quizState}
+          onSubmit={handleQuizSubmit}
+        />
+      )}
     </Wrapper>
   );
 }
