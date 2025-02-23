@@ -33,6 +33,7 @@ const Container = styled.div`
   flex-direction: column;
   height: 80%;
   width: 100%;
+  margin-bottom: 16px;
 `;
 
 export default function Home() {
