@@ -80,7 +80,7 @@ export default function Home() {
       setQuizState(null);
     } else {
       // Generate quiz state and transition to quiz mode
-      const newQuizState = generateQuizState(currentWord);
+      const newQuizState = generateQuizState();
       setQuizState(newQuizState);
       setGameState("quiz");
     }

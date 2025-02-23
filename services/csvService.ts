@@ -113,8 +113,12 @@ export async function loadWords(): Promise<GermanWord[]> {
             });
           resolve(words);
         },
-        error: (error) => {
-          reject(new Error(`CSV parsing failed: ${error.message}`));
+        error: (cause: Error) => {
+          reject(
+            new Error(`CSV parsing failed`, {
+              cause,
+            }),
+          );
         },
       });
     });
