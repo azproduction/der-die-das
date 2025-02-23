@@ -1,71 +1,37 @@
+// components/AdjectiveQuiz/index.tsx
 import { useState } from "react";
-import styled from "styled-components";
 import type { GermanWord } from "@/types";
 import type { AdjectiveQuizState } from "@/types/quiz";
 import { getCorrectArticle, getCorrectEnding } from "@/utils/grammar";
+import { Card, Button, Select, ButtonGroup } from "../styles";
+import styled from "styled-components";
 
-const QuizContainer = styled.div`
+const QuizContainer = styled(Card)`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding: 2rem;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Sentence = styled.div`
-  font-size: 1.25rem;
+  font-size: ${({ theme }) => theme.typography.sizes.large};
   line-height: 1.5;
   text-align: center;
-  font-family: var(--font-geist-sans);
+  font-family: ${({ theme }) => theme.typography.fontFamilySans};
 `;
 
 const Hint = styled.div`
-  font-size: 0.875rem;
-  color: #666;
+  font-size: ${({ theme }) => theme.typography.sizes.small};
+  color: ${({ theme }) => theme.colors.secondary};
   text-align: center;
   font-style: italic;
-  font-family: var(--font-geist-sans);
 `;
 
-const DropdownContainer = styled.div`
+const SelectGroup = styled.div`
   display: flex;
-  gap: 0.5rem;
-  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
   justify-content: center;
-`;
-
-const Select = styled.select`
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 2px solid black;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  font-family: var(--font-geist-sans);
-
-  &:focus {
-    outline: none;
-    border-color: #0066cc;
-  }
-`;
-
-const SubmitButton = styled.button`
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-  background: black;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 1rem;
-  font-family: var(--font-geist-sans);
-
-  &:disabled {
-    background: #666;
-    cursor: not-allowed;
-  }
+  align-items: center;
+  flex-wrap: wrap;
 `;
 
 interface AdjectiveQuizProps {
@@ -81,19 +47,14 @@ export default function AdjectiveQuiz({
 }: AdjectiveQuizProps) {
   const [selectedArticle, setSelectedArticle] = useState("");
   const [selectedEnding, setSelectedEnding] = useState("");
-  const [showHint, setShowHint] = useState(false);
 
   const handleSubmit = () => {
     const correctArticle = getCorrectArticle(word.article, quizState.case);
     const correctEnding = getCorrectEnding(word.article, quizState.case);
-
     const isCorrect =
       selectedArticle === correctArticle && selectedEnding === correctEnding;
-
     onSubmit(isCorrect);
   };
-
-  const showPrepositionHint = quizState.isDirectional !== undefined;
 
   return (
     <QuizContainer>
@@ -102,15 +63,15 @@ export default function AdjectiveQuiz({
         {selectedEnding || "___"} {word.word}
       </Sentence>
 
-      {showPrepositionHint && (
+      {quizState.isDirectional !== undefined && (
         <Hint>
-          Hint: &#34;{quizState.preposition}&#34; indicates{" "}
+          Hint: "{quizState.preposition}" indicates{" "}
           {quizState.isDirectional ? "movement/direction" : "position/location"}{" "}
           here
         </Hint>
       )}
 
-      <DropdownContainer>
+      <SelectGroup>
         <Select
           value={selectedArticle}
           onChange={(e) => setSelectedArticle(e.target.value)}
@@ -133,14 +94,16 @@ export default function AdjectiveQuiz({
           <option value="es">-es</option>
           <option value="er">-er</option>
         </Select>
-      </DropdownContainer>
+      </SelectGroup>
 
-      <SubmitButton
-        onClick={handleSubmit}
-        disabled={!selectedArticle || !selectedEnding}
-      >
-        Check Answer
-      </SubmitButton>
+      <ButtonGroup>
+        <Button
+          onClick={handleSubmit}
+          disabled={!selectedArticle || !selectedEnding}
+        >
+          Check Answer
+        </Button>
+      </ButtonGroup>
     </QuizContainer>
   );
 }

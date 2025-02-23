@@ -18,6 +18,14 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 1rem;
+  gap: 2rem;
+`;
+
+const ScoreDisplay = styled.div`
+  font-family: var(--font-geist-sans);
+  font-size: 1.125rem;
+  color: #666;
+  text-align: center;
 `;
 
 export default function Home() {
@@ -26,6 +34,7 @@ export default function Home() {
   const [quizState, setQuizState] = useState<AdjectiveQuizState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [score, setScore] = useState({ correct: 0, total: 0 });
   const wordSelector = useRef<WordSelector | null>(null);
 
   useEffect(() => {
@@ -45,14 +54,27 @@ export default function Home() {
     initializeWords();
   }, []);
 
+  const updateScore = (isCorrect: boolean) => {
+    setScore((prev) => ({
+      correct: prev.correct + (isCorrect ? 1 : 0),
+      total: prev.total + 1,
+    }));
+  };
+
   const handleGuess = (guess: Gender, isCorrect: boolean) => {
     if (!currentWord || !wordSelector.current) return;
 
+    updateScore(isCorrect);
+
     if (isCorrect) {
-      setCurrentWord(wordSelector.current!.getNextWord());
-      setGameState("playing");
-      setQuizState(null);
+      // Short delay to show feedback before moving to next word
+      setTimeout(() => {
+        setCurrentWord(wordSelector.current!.getNextWord());
+        setGameState("playing");
+        setQuizState(null);
+      }, 1000);
     } else {
+      // Generate quiz state and transition to quiz mode
       const newQuizState = generateQuizState(currentWord);
       setQuizState(newQuizState);
       setGameState("quiz");
@@ -62,9 +84,19 @@ export default function Home() {
   const handleQuizSubmit = (isCorrect: boolean) => {
     if (!wordSelector.current) return;
 
-    setCurrentWord(wordSelector.current!.getNextWord());
-    setGameState("playing");
-    setQuizState(null);
+    updateScore(isCorrect);
+
+    // Short delay to show feedback before moving to next word
+    setTimeout(() => {
+      setCurrentWord(wordSelector.current!.getNextWord());
+      setGameState("playing");
+      setQuizState(null);
+    }, 1000);
+  };
+
+  const getScorePercentage = () => {
+    if (score.total === 0) return 0;
+    return Math.round((score.correct / score.total) * 100);
   };
 
   if (isLoading) {
@@ -77,6 +109,10 @@ export default function Home() {
 
   return (
     <Wrapper>
+      <ScoreDisplay>
+        Score: {score.correct}/{score.total} ({getScorePercentage()}%)
+      </ScoreDisplay>
+
       <WordCard
         word={currentWord!}
         onGuess={handleGuess}

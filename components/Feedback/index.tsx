@@ -1,21 +1,5 @@
-import styled, { keyframes } from "styled-components";
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const FeedbackContainer = styled.div<{ $isCorrect: boolean }>`
-  padding: 1rem 2rem;
-  background-color: ${(props) => (props.$isCorrect ? "#e6ffe6" : "#ffe6e6")};
-  border: 2px solid ${(props) => (props.$isCorrect ? "#00cc00" : "#cc0000")};
-  border-radius: 4px;
-  color: ${(props) => (props.$isCorrect ? "#006600" : "#660000")};
-  font-family: var(--font-geist-sans);
-  animation: ${fadeIn} 0.3s ease-out;
-  text-align: center;
-  margin: 1rem 0;
-`;
+// components/Feedback/index.tsx
+import { Feedback as StyledFeedback } from "../styles";
 
 interface FeedbackProps {
   isCorrect: boolean;
@@ -25,12 +9,12 @@ interface FeedbackProps {
 
 export function Feedback({ isCorrect, correctArticle, word }: FeedbackProps) {
   if (isCorrect) {
-    return <FeedbackContainer $isCorrect={true}>Correct! ✓</FeedbackContainer>;
+    return <StyledFeedback $isSuccess>Correct! ✓</StyledFeedback>;
   }
 
   return (
-    <FeedbackContainer $isCorrect={false}>
+    <StyledFeedback>
       Not quite. The correct article is <strong>{correctArticle}</strong> {word}
-    </FeedbackContainer>
+    </StyledFeedback>
   );
 }
