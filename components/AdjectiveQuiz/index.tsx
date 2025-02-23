@@ -138,9 +138,14 @@ export default function AdjectiveQuiz({
 
   return (
     <QuizContainer>
-      <Word $isFailure={corrent === false} $isSuccess={corrent === true}>
+      <Word
+        $isFailure={corrent === false}
+        $isSuccess={corrent === true}
+        lang="de"
+      >
         <ruby>
-          {quizState.preposition} <rp>(</rp>
+          {quizState.preposition}
+          <rp>(</rp>
           <rt style={{ opacity: 0.5, fontWeight: 500 }}>
             {}
             {(() => {
@@ -152,7 +157,7 @@ export default function AdjectiveQuiz({
             })()}
           </rt>
           <rp>)</rp>
-        </ruby>
+        </ruby>{" "}
         {"…"} {quizState.adjective}
         {"…"} <WordWithMagicalSuffix word={word} />
       </Word>
@@ -208,8 +213,8 @@ export default function AdjectiveQuiz({
       </SelectGroup>
       {corrent === false && (
         <>
-          <Word>{word.note}</Word>
-          <center>{word.example}</center>
+          <Word lang="de">{word.note}</Word>
+          <center lang="de">{word.example}</center>
           <Button onClick={() => onSubmit(false)}>OK</Button>
         </>
       )}

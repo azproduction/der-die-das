@@ -32,7 +32,7 @@ warm
 heiß
 sauber
 schmutzig
-fren
+fern
 weit
 ruhig
 laut

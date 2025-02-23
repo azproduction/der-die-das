@@ -61,6 +61,9 @@ export const Word = styled.h1<{ $isSuccess?: boolean; $isFailure?: boolean }>`
   }};
 
   transition: color ${({ theme }) => theme.transitions.fast};
+
+  hyphens: auto;
+  overflow: hidden;
 `;
 
 export const Feedback = styled.div<{ $isSuccess?: boolean }>`

@@ -35,7 +35,7 @@ export default function WordCard({
 
   return (
     <Card>
-      <Word>
+      <Word lang="de">
         <WordWithMagicalSuffix word={word} />
       </Word>
       <ButtonGroup>
